@@ -1,6 +1,9 @@
 import { useSession } from 'next-auth/react'
 import React from 'react'
 import Avatar from './Avatar'
+import { PhotographIcon,
+  LinkIcon,
+} from '@heroicons/react/outline'
 
 function PostBox() {
   const { data: session } = useSession()
@@ -16,6 +19,8 @@ function PostBox() {
             session ? 'Create a post by entering a title' : 'Sign in to post'
           }
         />
+        <PhotographIcon className={`h-6 text-gray-300 cursor-pointer`}/>
+        <LinkIcon className="h-6 text-gray-300"/>
       </div>
     </form>
   )

@@ -87,6 +87,15 @@ type Query {
       table: "subreddit"
       configuration: "postgresql_config"
     )
+
+  getSubredditListByTopic(topic: String!): [Subreddit]
+    @dbquery(
+      type: "postgresql"
+      query:"""
+      select * from "subreddit" where "topic" = $1
+      """
+      configuration: "postgresql_config"
+    )
   getVoteList: [Vote]
     @dbquery(
       type: "postgresql"
@@ -103,15 +112,21 @@ type Mutation {
   insertPost(
     image: String!
     body: String!
-    created_at: DateTime!
     subreddit_id: ID!
     title: String!
     username: String!
   ): Post
     @dbquery(
       type: "postgresql"
-      schema: "public"
       table: "post"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+
+  insertSubreddit(topic: String!): Subreddit
+    @dbquery(
+      type: "postgresql"
+      table: "subreddit"
       dml: INSERT
       configuration: "postgresql_config"
     )

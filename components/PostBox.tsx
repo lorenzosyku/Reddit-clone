@@ -30,7 +30,7 @@ function PostBox() {
   } = useForm<FormData>()
 
   const onSubmit = handleSubmit(async (formData) => {
-    console.log(formData)
+    //console.log(formData)
     const notification = toast.loading('Creating a new Post...')
     try {
       const {
@@ -160,17 +160,7 @@ function PostBox() {
               />
             </div>
           )}
-          {Object.keys(errors).length > 0 && (
-            <div className="space-y-2 p-2 text-red-500">
-              {errors.postTitle?.type === 'required' && (
-                <p>A post title is required</p>
-              )}
-
-              {errors.subreddit?.type === 'required' && (
-                <p>A subreddit is required</p>
-              )}
-            </div>
-          )}
+          
 
           {!!watch('postTitle') && (
             <button

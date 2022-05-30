@@ -21,6 +21,7 @@ function PostBox() {
   const [addPost] = useMutation(ADD_POST)
   const [addSubreddit] = useMutation(ADD_SUBREDDIT)
   const [imageBoxOpen, setImageBoxOpen] = useState<boolean>()
+
   const {
     register,
     setValue,
@@ -32,6 +33,7 @@ function PostBox() {
   const onSubmit = handleSubmit(async (formData) => {
     //console.log(formData)
     const notification = toast.loading('Creating a new Post...')
+
     try {
       const {
         data: { getSubredditListByTopic },
@@ -42,11 +44,17 @@ function PostBox() {
         },
       })
 
-      const subredditExist = getSubredditListByTopic.lenght > 0
+      const subredditExists = getSubredditListByTopic.length > 0
+      console.log(
+        'Subreddits found with topic: ',
+        formData.subreddit,
+        getSubredditListByTopic
+      )
 
-      if (!subredditExist) {
-        console.log('subreddit is new -> creating a new subreddit...')
+      if (!subredditExists) {
+        console.log('Subreddit is new! -> creating a NEW subreddit!')
 
+        // Create subreddit...
         const {
           data: { insertSubreddit: newSubreddit },
         } = await addSubreddit({
@@ -54,7 +62,8 @@ function PostBox() {
             topic: formData.subreddit,
           },
         })
-        console.log('creating the post ...', formData)
+
+        console.log('Creating post...', formData)
         const image = formData.postImage || ''
 
         const {
@@ -68,9 +77,11 @@ function PostBox() {
             username: session?.user?.name,
           },
         })
-        console.log('New Post added:', newPost)
+
+        console.log(newPost)
       } else {
-        console.log('use existing subreddit')
+        // Use existing subreddit...
+        console.log('Using existing subreddit!')
         console.log(getSubredditListByTopic)
 
         const image = formData.postImage || ''
@@ -86,18 +97,18 @@ function PostBox() {
             username: session?.user?.name,
           },
         })
-        console.log('new post added:', newPost)
       }
 
       setValue('postBody', '')
       setValue('postImage', '')
       setValue('postTitle', '')
       setValue('subreddit', '')
-      toast.success('New Post created!', {
+
+      toast.success('New Post Created!', {
         id: notification,
       })
     } catch (error) {
-      toast.error('Something went wrong', {
+      toast.error('Whoops something went wrong!', {
         id: notification,
       })
     }
@@ -113,20 +124,22 @@ function PostBox() {
         <input
           {...register('postTitle', { required: true })}
           disabled={!session}
-          className="flex-1 rounded-md bg-gray-50 p-2 pl-5 outline-none"
+          className="flex-1 rounded-md bg-gray-50 p-2 pl-5 outline-none "
           type="text"
           placeholder={
             session ? 'Create a post by entering a title' : 'Sign in to post'
           }
         />
+
         <PhotographIcon
           onClick={() => setImageBoxOpen(!imageBoxOpen)}
-          className={`h-6 cursor-pointer text-gray-300 ${
+          className={`h-6 text-gray-300 ${
             imageBoxOpen && 'text-blue-300'
-          }`}
+          } cursor-pointer`}
         />
         <LinkIcon className="h-6 text-gray-300" />
       </div>
+
       {!!watch('postTitle') && (
         <div className="flex flex-col py-2">
           <div className="flex items-center px-2">
@@ -143,9 +156,9 @@ function PostBox() {
             <p className="min-w-[90px]">Subreddit:</p>
             <input
               className="m-2 flex-1 bg-blue-50 p-2 outline-none"
-              {...(register('subreddit'), { required: true })}
+              {...register('subreddit', { required: true })}
               type="text"
-              placeholder="i.e. reactjs"
+              placeholder="i.e. Reactjs"
             />
           </div>
 
@@ -160,17 +173,29 @@ function PostBox() {
               />
             </div>
           )}
-          
+        </div>
+      )}
 
-          {!!watch('postTitle') && (
-            <button
-              type="submit"
-              className="w-full rounded-full bg-blue-400 p-2 text-white"
-            >
-              Create Post
-            </button>
+      {/* Errors */}
+      {Object.keys(errors).length > 0 && (
+        <div className="space-y-2 p-2 text-red-500">
+          {errors.postTitle?.type === 'required' && (
+            <p>- A Post Title is required</p>
+          )}
+
+          {errors.subreddit?.type === 'required' && (
+            <p>- A Subreddit is required</p>
           )}
         </div>
+      )}
+
+      {!!watch('postTitle') && (
+        <button
+          className="w-full rounded-full bg-blue-400 p-2 text-white"
+          type="submit"
+        >
+          Create Post
+        </button>
       )}
     </form>
   )

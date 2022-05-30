@@ -6,6 +6,14 @@ type Comment {
   username: String
 }
 
+type Vote {
+  created_at: DateTime
+  id: ID!
+  post_id: ID
+  upvote: Boolean
+  username: String
+}
+
 type Post {
   body: String
   created_at: DateTime
@@ -13,7 +21,22 @@ type Post {
   image: String
   subreddit_id: ID
   title: String
-  username: String
+  username: String!
+  votes: [Vote]
+    @materializer(
+      query: "getVotesByPostId"
+      arguments: [{ name: "post_id", field: "id" }]
+    )
+  comments: [Comment]
+    @materializer(
+      query: "getCommentByPostId"
+      arguments: [{ name: "post_id", field: "id" }]
+    )
+  subreddit: [Subreddit]
+    @materializer(
+      query: "getSubredditListById"
+      arguments: [{ name: "id", field: "subreddit_id" }]
+    )
 }
 
 type Subreddit {
@@ -22,19 +45,10 @@ type Subreddit {
   topic: String
 }
 
-type Vote {
-  created_at: DateTime
-  id: ID!
-  post_id: ID
-  upvote: Int
-  username: String
-}
-
 type Query {
   getCommentList: [Comment]
     @dbquery(
       type: "postgresql"
-      schema: "public"
       table: "comment"
       configuration: "postgresql_config"
     )
@@ -45,19 +59,63 @@ type Query {
     @dbquery(
       type: "postgresql"
       query: """
-      select * from "public"."comment" limit $1 offset $2
+      select * from "comment" limit $1 offset $2
       """
       configuration: "postgresql_config"
     )
+
+  """
+  How to query based on subreddit topic
+  """
+  getSubredditListByTopic(topic: String!): [Subreddit]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "subreddit" where "topic" = $1
+      """
+      configuration: "postgresql_config"
+    )
+
+  """
+  How to query based on subreddit id
+  """
+  getSubredditListById(id: ID!): [Subreddit]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "subreddit" where "id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+
+  getVotesByPostId(post_id: ID!): [Vote]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "vote" where "post_id" = $1
+      order by "created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
+
+  getVotesByPostIdAndUsername(post_id: ID!, username: String!): [Vote]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "vote" where "post_id" = $1 and "username" = $2
+      """
+      configuration: "postgresql_config"
+    )
+
   """
   In this example, a single query parameter is passed. If the request to the DB will
   return at most one value you can remove the square brackets from the result.
   """
-  getCommentByPost_id(post_id: ID!): [Comment]
+  getCommentByPostId(post_id: ID!): [Comment]
     @dbquery(
       type: "postgresql"
       query: """
-      select * from "public"."comment" where "post_id" = $1
+      select * from "comment" where "post_id" = $1
       """
       configuration: "postgresql_config"
     )
@@ -65,46 +123,67 @@ type Query {
   In this example, two query parameters are passed. If the request to the DB will
   return at most one value you can remove the square brackets from the result.
   """
-  getCommentByPost_idAndUsername(post_id: ID!, username: String!): [Comment]
+  getCommentByPostIdAndUsername(post_id: ID!, username: String!): [Comment]
     @dbquery(
       type: "postgresql"
       query: """
-      select * from "public"."comment" where "post_id" = $1 and "username" = $2
+      select * from "comment" where "post_id" = $1 and "username" = $2
       """
       configuration: "postgresql_config"
     )
+  # getPostList: [Post]
+  #   @dbquery(
+  #     type: "postgresql"
+  #     table: "post"
+  #     configuration: "postgresql_config"
+  #   )
   getPostList: [Post]
     @dbquery(
       type: "postgresql"
-      schema: "public"
-      table: "post"
+      query: """
+      select *, "post".id as id from "post"
+      join "subreddit" on "subreddit"."id" = "post"."subreddit_id"
+      order by "post"."created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
+  getPostListByPostId(post_id: ID!): Post
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select *, "post".id as id from "post"
+      where "post"."id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+  getPostListByTopic(topic: String!): [Post]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select *, "post".id as id from "post"
+      join "subreddit" on "subreddit"."id" = "post"."subreddit_id"
+      where "subreddit"."topic" = $1
+      order by "post"."created_at" desc
+      """
       configuration: "postgresql_config"
     )
   getSubredditList: [Subreddit]
     @dbquery(
       type: "postgresql"
-      schema: "public"
       table: "subreddit"
       configuration: "postgresql_config"
     )
-
-  getSubredditListByTopic(topic: String!): [Subreddit]
+  getSubredditListLimit(limit: Int!): [Subreddit]
     @dbquery(
       type: "postgresql"
-      query:"""
-      select * from "subreddit" where "topic" = $1
+      query: """
+      select * from "subreddit"
+      order by "created_at" desc
+      limit $1
       """
       configuration: "postgresql_config"
     )
-  getVoteList: [Vote]
-    @dbquery(
-      type: "postgresql"
-      schema: "public"
-      table: "vote"
-      configuration: "postgresql_config"
-    )
 }
-
 type Mutation {
   """
   In this mutation example you can see how to do a mutation to insert data in the database.
@@ -122,7 +201,6 @@ type Mutation {
       dml: INSERT
       configuration: "postgresql_config"
     )
-
   insertSubreddit(topic: String!): Subreddit
     @dbquery(
       type: "postgresql"
@@ -130,6 +208,32 @@ type Mutation {
       dml: INSERT
       configuration: "postgresql_config"
     )
+  insertVote(post_id: ID!, username: String!, upvote: Boolean!): Vote
+    @dbquery(
+      type: "postgresql"
+      table: "vote"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+  insertComment(post_id: ID!, username: String!, text: String!): Comment
+    @dbquery(
+      type: "postgresql"
+      table: "comment"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+  # updateVote(post_id: ID!, username: String!, upvote: Boolean!): Vote
+  #   @dbquery(
+  #     type: "postgresql"
+  #     table: "vote"
+  #     query: """
+  #     update vote
+  #     set "upvote" = $3
+  #     where "post_id" = $1 and "username" = $2
+  #     """
+  #     configuration: "postgresql_config"
+  #   )
+
   """
   In this mutation example you can see how to do a mutation to delete data from the database.
   """
@@ -144,7 +248,6 @@ type Mutation {
   ): Post
     @dbquery(
       type: "postgresql"
-      schema: "public"
       table: "post"
       dml: DELETE
       configuration: "postgresql_config"

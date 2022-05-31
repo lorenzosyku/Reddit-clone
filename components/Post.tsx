@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/outline'
 import Avatar from './Avatar'
 import Link from 'next/link'
+import TimeAgo from 'react-timeago'
 
 type Props = {
   post: Post
@@ -40,7 +41,7 @@ function Post({post}: Props) {
                 r/{post.subreddit[0]?.topic}
               </span>
             </Link>{' '}
-            • Posted by u/{post.username}  
+            • Posted by u/{post.username}  <TimeAgo date={post.created_at} />
           </p>
         </div>
 

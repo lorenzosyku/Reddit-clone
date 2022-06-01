@@ -78,6 +78,7 @@ function Post({ post }: Props) {
 
   const displayVotes = (data: any) => {
     const votes: Vote[] = data?.getVotesByPostId
+    console.log(votes)
     const displayNumber = votes?.reduce(
       (total, vote) => (vote.upvote ? (total += 1) : (total -= 1)),
       0

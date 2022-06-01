@@ -40,17 +40,14 @@ function PostPage() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     const notification = toast.loading('Posting your comment...')
-
-    const {
-      data: { insertedComment },
-    } = await addComment({
+    
+     await addComment({
       variables: {
         post_id: router.query.postId,
         username: session?.user?.name,
         text: data.comment,
       },
     })
-
     setValue('comment', '')
 
     toast.success('Comment Successfully Posted!', {

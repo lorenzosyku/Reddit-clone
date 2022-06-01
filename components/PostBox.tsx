@@ -1,13 +1,17 @@
+import { LinkIcon, PhotographIcon } from '@heroicons/react/outline'
 import { useSession } from 'next-auth/react'
 import React, { useState } from 'react'
-import Avatar from './Avatar'
-import { PhotographIcon, LinkIcon } from '@heroicons/react/outline'
 import { useForm } from 'react-hook-form'
-import { useMutation } from '@apollo/client'
-import { ADD_POST, ADD_SUBREDDIT } from '../graphql/mutations'
+import { gql, useMutation, useQuery } from '@apollo/client'
 import client from '../apollo-client'
-import { GET_ALL_POSTS, GET_SUBREDDIT_BY_TOPIC } from '../graphql/queries'
 import toast from 'react-hot-toast'
+import { ADD_POST, ADD_SUBREDDIT } from '../graphql/mutations'
+import {
+  GET_ALL_POSTS,
+  GET_SUBREDDITS_WITH_LIMIT,
+  GET_SUBREDDIT_BY_TOPIC,
+} from '../graphql/queries'
+import Avatar from './Avatar'
 
 type FormData = {
   postTitle: string
@@ -16,13 +20,24 @@ type FormData = {
   subreddit: string
 }
 
-function PostBox() {
+type Props = {
+  subreddit?: string
+}
+
+function PostBox({ subreddit }: Props) {
   const { data: session } = useSession()
-  const [addPost] = useMutation(ADD_POST, {
-    refetchQueries: [GET_ALL_POSTS, 'getPostList'],
-  })
+  const [imageBoxOpen, setImageBoxOpen] = useState(false)
   const [addSubreddit] = useMutation(ADD_SUBREDDIT)
-  const [imageBoxOpen, setImageBoxOpen] = useState<boolean>()
+  const [addPost] = useMutation(ADD_POST, {
+    refetchQueries: [
+      GET_ALL_POSTS,
+      'getPostList',
+      GET_SUBREDDIT_BY_TOPIC,
+      'getPostListByTopic',
+      GET_SUBREDDITS_WITH_LIMIT,
+      'getSubredditListLimit',
+    ],
+  })
 
   const {
     register,
@@ -33,8 +48,8 @@ function PostBox() {
   } = useForm<FormData>()
 
   const onSubmit = handleSubmit(async (formData) => {
-    //console.log(formData)
-    const notification = toast.loading('Creating a new Post...')
+    console.log('Fetching subreddit')
+    const notification = toast.loading('Creating new Post...')
 
     try {
       const {
@@ -42,7 +57,8 @@ function PostBox() {
       } = await client.query({
         query: GET_SUBREDDIT_BY_TOPIC,
         variables: {
-          topic: formData.subreddit,
+          // Use props first, fallback to form
+          topic: subreddit || formData.subreddit,
         },
       })
 
@@ -60,9 +76,7 @@ function PostBox() {
         const {
           data: { insertSubreddit: newSubreddit },
         } = await addSubreddit({
-          variables: {
-            topic: formData.subreddit,
-          },
+          variables: { topic: formData.subreddit },
         })
 
         console.log('Creating post...', formData)
@@ -116,20 +130,26 @@ function PostBox() {
     }
   })
 
+  console.log(subreddit)
+
   return (
     <form
       onSubmit={onSubmit}
       className="sticky top-16 z-50 rounded-md border border-gray-300 bg-white p-2"
     >
       <div className="flex items-center space-x-3">
-        <Avatar seed="Loro" large />
+        <Avatar />
         <input
           {...register('postTitle', { required: true })}
           disabled={!session}
           className="flex-1 rounded-md bg-gray-50 p-2 pl-5 outline-none "
           type="text"
           placeholder={
-            session ? 'Create a post by entering a title' : 'Sign in to post'
+            session
+              ? subreddit
+                ? `Create a Post in r/${subreddit}`
+                : 'Create a Post by entering a title...'
+              : 'Sign in to Post!'
           }
         />
 
@@ -154,15 +174,17 @@ function PostBox() {
             />
           </div>
 
-          <div className="flex items-center px-2">
-            <p className="min-w-[90px]">Subreddit:</p>
-            <input
-              className="m-2 flex-1 bg-blue-50 p-2 outline-none"
-              {...register('subreddit', { required: true })}
-              type="text"
-              placeholder="i.e. Reactjs"
-            />
-          </div>
+          {!subreddit && (
+            <div className="flex items-center px-2">
+              <p className="min-w-[90px]">Subreddit:</p>
+              <input
+                className="m-2 flex-1 bg-blue-50 p-2 outline-none"
+                {...register('subreddit', { required: true })}
+                type="text"
+                placeholder="i.e. Reactjs"
+              />
+            </div>
+          )}
 
           {imageBoxOpen && (
             <div className="flex items-center px-2">
@@ -171,7 +193,7 @@ function PostBox() {
                 className="m-2 flex-1 bg-blue-50 p-2 outline-none"
                 {...register('postImage')}
                 type="text"
-                placeholder="Optional"
+                placeholder="Optional..."
               />
             </div>
           )}

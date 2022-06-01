@@ -25,6 +25,7 @@ type Props = {
 }
 
 function PostBox({ subreddit }: Props) {
+  console.log(subreddit)
   const { data: session } = useSession()
   const [imageBoxOpen, setImageBoxOpen] = useState(false)
   const [addSubreddit] = useMutation(ADD_SUBREDDIT)

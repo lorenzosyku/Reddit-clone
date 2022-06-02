@@ -1,3 +1,7 @@
+## Preview
+![alt text](./images/demo1.png) 
+![alt text](./images/demo2.png)
+
 ## Built With
 
 - [NextJS](https://nextjs.org/) - The React Framework

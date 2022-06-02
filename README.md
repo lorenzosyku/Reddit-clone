@@ -1,23 +1,28 @@
-# Next.js + Tailwind CSS Example
+## Built With
 
-This example shows how to use [Tailwind CSS](https://tailwindcss.com/) [(v3.0)](https://tailwindcss.com/blog/tailwindcss-v3) with Next.js. It follows the steps outlined in the official [Tailwind docs](https://tailwindcss.com/docs/guides/nextjs).
-
-## Deploy your own
-
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) or preview live with [StackBlitz](https://stackblitz.com/github/vercel/next.js/tree/canary/examples/with-tailwindcss)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-tailwindcss&project-name=with-tailwindcss&repository-name=with-tailwindcss)
-
-## How to use
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init) or [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/) to bootstrap the example:
-
-```bash
-npx create-next-app --example with-tailwindcss with-tailwindcss-app
-# or
-yarn create next-app --example with-tailwindcss with-tailwindcss-app
-# or
-pnpm create next-app -- --example with-tailwindcss with-tailwindcss-app
-```
+- [NextJS](https://nextjs.org/) - The React Framework
+  for Production.
+  - Authentication flow with Reddit API using NextAuth
+  - Server Side Rendering
+  - Create API backend endpoints
+- [TailwindCSS 3](https://tailwindcss.com/) - Rapidly build modern websites without ever leaving your HTML
+- [TypeScript](https://www.typescriptlang.org/) - TypeScript is JavaScript with syntax for types.
+  Intuitive SDKs and widgets for developers.
+- [Supabase](https://www.supabase.com/) - Supabase is an open source Firebase alternative.
+  - Hosted Postgres Database. 
+  - Authentication and Authorization. 
+  - Auto-generated APIs.
+    - REST. 
+    - Realtime subscriptions. 
+    - GraphQL (Beta). 
+  - Functions.
+    - Database Functions. 
+    - Edge Function. 
+  - File Storage. 
+  - Dashboard
+- [Stepzen](https://www.stepzen.com/) - The quickest way to get started is to autogenerate your schemas and resolvers. Specify an existing data source using the stepzen import command. StepZen introspects the endpoint and generates a GraphQL schema for you.
+- [React Hot Toast](https://react-hot-toast.com/) - Smoking hot React notifications.
+- [react-timeago](https://www.npmjs.com/package/react-timeago) - is a very simple component that takes a date prop and returns a span with live updating date in a time-ago format.
+  <br>
 
 Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).

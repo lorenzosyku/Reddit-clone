@@ -61,7 +61,7 @@ function PostPage() {
 
       <div className="-mt-1 rounded-b-md border border-t-0 border-gray-300 bg-white p-5 pl-16">
         <p className="text-sm">
-          Comment as <span className="text-red-500">{session?.user?.name}</span>
+          Comment as <span className="text-red-400">{session?.user?.name}</span>
         </p>
 
         <form
